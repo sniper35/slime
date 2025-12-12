@@ -32,9 +32,14 @@ Please execute the following commands to pull the latest image and start an inte
 docker pull slimerl/slime:latest
 
 # Start the container
-docker run --rm --gpus all --ipc=host --shm-size=16g \
+docker run --rm --gpus all --ipc=host --shm-size=300g \
   --ulimit memlock=-1 --ulimit stack=67108864 \
-  -it slimerl/slime:latest /bin/bash
+  -p 8265:8265 \
+  -v /root/Megatron-LM:/root/Megatron-LM \
+  -v /root/slime:/root/slime \
+   -v /root/ray_logs:/tmp/ray \
+  -v /root/tensorboard_log:/root/tensorboard_log \
+  -it slimerl/slime:latest /bin/bash 
 ```
 
 ### Install slime
@@ -86,6 +91,7 @@ Next, run the conversion script. Please note the following parameters:
 - `--save`: Specify the save path for the converted `torch_dist` format weights.
 
 ```bash
+pip install transformers -U
 PYTHONPATH=/root/Megatron-LM python tools/convert_hf_to_torch_dist.py \
     ${MODEL_ARGS[@]} \
     --hf-checkpoint /root/GLM-Z1-9B-0414 \
@@ -114,6 +120,7 @@ Note that as Megatron will do padding to embedding for better performance, it ma
 After completing the above preparation work, you can run the training script.
 
 ```bash
+export WANDB_KEY=your_wandb_api_key
 cd /root/slime
 bash scripts/run-glm4-9B.sh
 ```
